@@ -117,6 +117,7 @@ print(result.planned_orders)
 
 Detailed documentation available in the `docs/` directory:
 
+- [🔗 Integration with NexusBom](./docs/INTEGRATION_WITH_NEXUSBOM.md) - Complete BOM + MRP integration guide
 - [Dynamic Time Buckets](./docs/DYNAMIC_TIME_BUCKETS.md) - Flexible time bucket planning
 - [Negative Inventory Handling](./docs/NEGATIVE_INVENTORY.md) - Advanced shortage management
 - [Commercial License](./docs/COMMERCIAL-LICENSE.zh-TW.md) - Commercial licensing terms
