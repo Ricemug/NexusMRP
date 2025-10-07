@@ -1,0 +1,26 @@
+[package]
+name = "mrp-calc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+mrp-core.workspace = true
+
+# BOM 引擎依賴
+bom-core.workspace = true
+bom-graph.workspace = true
+bom-calc.workspace = true
+
+chrono.workspace = true
+rust_decimal.workspace = true
+uuid.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+rstest.workspace = true

@@ -1,0 +1,93 @@
+[workspace]
+members = [
+    "crates/mrp-core",
+    "crates/mrp-calc",
+    "crates/mrp-optimizer",
+    "crates/mrp-ffi",
+    "crates/mrp-cache",
+]
+
+resolver = "2"
+
+[package]
+name = "mrp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+mrp-core.workspace = true
+mrp-calc.workspace = true
+bom-core.workspace = true
+bom-graph.workspace = true
+chrono.workspace = true
+rust_decimal.workspace = true
+uuid.workspace = true
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "AGPL-3.0 OR Commercial"
+authors = ["ERP Development Team"]
+repository = "https://github.com/your-org/mrp"
+homepage = "https://github.com/your-org/mrp"
+
+[workspace.dependencies]
+# 日期時間
+chrono = { version = "0.4", features = ["serde"] }
+
+# 高精度數值（避免浮點誤差）
+rust_decimal = { version = "1.38", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.11", features = ["v4", "serde"] }
+
+# 錯誤處理
+thiserror = "2.0"
+anyhow = "1.0"
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 並行計算
+rayon = "1.11"
+
+# 日誌
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# BOM 引擎依賴（本地路徑）
+bom-core = { path = "../bom/crates/bom-core" }
+bom-graph = { path = "../bom/crates/bom-graph" }
+bom-calc = { path = "../bom/crates/bom-calc" }
+
+# 內部 crate
+mrp-core = { path = "crates/mrp-core" }
+mrp-calc = { path = "crates/mrp-calc" }
+mrp-optimizer = { path = "crates/mrp-optimizer" }
+mrp-cache = { path = "crates/mrp-cache" }
+
+# 測試依賴
+rstest = "0.23"
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.6"
+fake = "3.0"
+rand = "0.8"
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.bench]
+inherits = "release"

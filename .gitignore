@@ -1,0 +1,45 @@
+# Rust
+/target
+/Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+
+# Benchmarks
+/benches/target
+
+# Documentation
+/target/doc
+
+# Test results
+/tests/test_data/*.tmp
+
+# Internal documentation (not for open source)
+MRP_ENGINE_DESIGN.md
+INTERNAL*.md
+TODO*.md
+NOTES*.md
+/src/
+
+# Private configs
+.env.local
+*.secret

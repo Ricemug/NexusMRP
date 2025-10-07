@@ -1,0 +1,27 @@
+[package]
+name = "mrp-ffi"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "mrp_engine"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+mrp-core.workspace = true
+mrp-calc.workspace = true
+
+chrono.workspace = true
+rust_decimal.workspace = true
+uuid.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+# Python 綁定
+pyo3 = { version = "0.23", features = ["extension-module"] }
+
+[dev-dependencies]
+rstest.workspace = true
