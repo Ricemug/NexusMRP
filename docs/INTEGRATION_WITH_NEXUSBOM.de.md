@@ -1,52 +1,52 @@
-# 🔗 Integration Guide: NexusMRP + NexusBom
+# 🔗 Integrationsleitfaden: NexusMRP + NexusBom
 
-> Complete guide for integrating Material Requirements Planning with Bill of Materials
+> Vollständiger Leitfaden zur Integration von Materialbedarfsplanung und Stückliste
 
-[繁體中文](./INTEGRATION_WITH_NEXUSBOM.zh-TW.md) | [简体中文](./INTEGRATION_WITH_NEXUSBOM.zh-CN.md) | [Deutsch](./INTEGRATION_WITH_NEXUSBOM.de.md)
+[English](./INTEGRATION_WITH_NEXUSBOM.md) | [繁體中文](./INTEGRATION_WITH_NEXUSBOM.zh-TW.md) | [简体中文](./INTEGRATION_WITH_NEXUSBOM.zh-CN.md)
 
-This guide explains how to integrate **NexusMRP** (Material Requirements Planning) with **NexusBom** (Bill of Materials) to build a complete manufacturing planning system.
+Dieser Leitfaden erklärt, wie Sie **NexusMRP** (Materialbedarfsplanung) mit **NexusBom** (Stückliste) integrieren, um ein vollständiges Fertigungsplanungssystem aufzubauen.
 
-## 📋 Table of Contents
+## 📋 Inhaltsverzeichnis
 
-- [Overview](#overview)
-- [Why Integrate?](#why-integrate)
-- [Architecture](#architecture)
-- [Integration Steps](#integration-steps)
-- [Code Examples](#code-examples)
+- [Überblick](#überblick)
+- [Warum integrieren?](#warum-integrieren)
+- [Architektur](#architektur)
+- [Integrationsschritte](#integrationsschritte)
+- [Codebeispiele](#codebeispiele)
 - [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
+- [Fehlerbehebung](#fehlerbehebung)
 
-## Overview
+## Überblick
 
-**NexusBom** and **NexusMRP** are designed as complementary systems:
+**NexusBom** und **NexusMRP** sind als komplementäre Systeme konzipiert:
 
-- **NexusBom**: Manages product structures, material explosions, and cost calculations
-- **NexusMRP**: Plans material requirements, schedules production, and manages inventory
+- **NexusBom**: Verwaltet Produktstrukturen, Materialauflösungen und Kostenberechnungen
+- **NexusMRP**: Plant Materialbedarfe, plant Produktion und verwaltet Bestände
 
-Together, they form a powerful manufacturing planning solution.
+Zusammen bilden sie eine leistungsstarke Fertigungsplanungslösung.
 
-## Why Integrate?
+## Warum integrieren?
 
-| Without Integration | With Integration |
-|---------------------|------------------|
-| Manual BOM lookups | Automatic material explosion |
-| Static planning | Dynamic demand propagation |
-| Disconnected systems | End-to-end visibility |
-| Limited optimization | Capacity-aware planning |
+| Ohne Integration | Mit Integration |
+|------------------|-----------------|
+| Manuelle Stücklistenabfragen | Automatische Materialauflösung |
+| Statische Planung | Dynamische Bedarfspropagierung |
+| Getrennte Systeme | End-to-End-Transparenz |
+| Begrenzte Optimierung | Kapazitätsbewusste Planung |
 
-### Key Benefits
+### Hauptvorteile
 
-✅ **Automatic Multi-Level Planning** - MRP uses BOM to explode demands through all levels
-✅ **Real-Time Cost Analysis** - Combine planned orders with BOM costs
-✅ **Change Impact Analysis** - See how BOM changes affect material plans
-✅ **Phantom Part Handling** - MRP respects BOM phantom components
-✅ **Alternate BOM Support** - Plan with different manufacturing routes
+✅ **Automatische mehrstufige Planung** - MRP nutzt Stückliste zur Auflösung aller Ebenen
+✅ **Echtzeit-Kostenanalyse** - Kombination geplanter Aufträge mit Stücklistenkosten
+✅ **Änderungsauswirkungsanalyse** - Zeigt, wie Stücklistenänderungen Materialpläne beeinflussen
+✅ **Phantom-Teile-Behandlung** - MRP berücksichtigt Phantom-Komponenten der Stückliste
+✅ **Alternative Stücklistenunterstützung** - Planung mit verschiedenen Fertigungsrouten
 
-## Architecture
+## Architektur
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   Your Application                       │
+│                   Ihre Anwendung                         │
 └─────────────────────────────────────────────────────────┘
                            │
            ┌───────────────┴───────────────┐
@@ -54,53 +54,53 @@ Together, they form a powerful manufacturing planning solution.
            ▼                               ▼
 ┌──────────────────────┐       ┌──────────────────────┐
 │     NexusBom         │       │     NexusMRP         │
-│  (BOM Structure)     │◄──────│  (Planning Logic)    │
+│   (Stücklistenstr.)  │◄──────│   (Planungslogik)    │
 └──────────────────────┘       └──────────────────────┘
            │                               │
-           │     Material Explosion        │
-           │     Component Lists           │
-           │     Cost Data                 │
+           │     Materialauflösung          │
+           │     Komponentenlisten          │
+           │     Kostendaten                │
            └───────────────────────────────┘
 ```
 
-### Data Flow
+### Datenfluss
 
-1. **Load BOM Data** → NexusBom builds product structure graph
-2. **Create Demands** → NexusMRP receives top-level requirements
-3. **Explode BOM** → NexusBom provides component lists with quantities
-4. **Calculate MRP** → NexusMRP propagates demands through BOM levels
-5. **Generate Plans** → Output planned orders for all components
+1. **Stücklistendaten laden** → NexusBom erstellt Produktstruktur-Graph
+2. **Bedarfe erstellen** → NexusMRP erhält Top-Level-Anforderungen
+3. **Stückliste auflösen** → NexusBom liefert Komponentenlisten mit Mengen
+4. **MRP berechnen** → NexusMRP propagiert Bedarfe durch Stücklistenebenen
+5. **Pläne generieren** → Ausgabe geplanter Aufträge für alle Komponenten
 
-## Integration Steps
+## Integrationsschritte
 
-### Step 1: Add Dependencies
+### Schritt 1: Abhängigkeiten hinzufügen
 
-Add both libraries to your `Cargo.toml`:
+Fügen Sie beide Bibliotheken zu Ihrer `Cargo.toml` hinzu:
 
 ```toml
 [dependencies]
-# NexusBom - BOM calculation engine
+# NexusBom - Stücklistenberechnungsmodul
 bom-core = { git = "https://github.com/Ricemug/NexusBom" }
 bom-calc = { git = "https://github.com/Ricemug/NexusBom" }
 bom-graph = { git = "https://github.com/Ricemug/NexusBom" }
 
-# NexusMRP - MRP calculation engine
+# NexusMRP - MRP-Berechnungsmodul
 mrp-core = { git = "https://github.com/Ricemug/NexusMRP" }
 mrp-calc = { git = "https://github.com/Ricemug/NexusMRP" }
 mrp-cache = { git = "https://github.com/Ricemug/NexusMRP" }
 ```
 
-### Step 2: Build BOM Graph
+### Schritt 2: Stücklisten-Graph erstellen
 
 ```rust
 use bom_core::*;
 use bom_graph::BomGraph;
 
-// Define your product structure
+// Definieren Sie Ihre Produktstruktur
 let components = vec![
     Component {
         id: ComponentId::new("BIKE-001"),
-        description: "Complete Bicycle".to_string(),
+        description: "Komplettes Fahrrad".to_string(),
         component_type: ComponentType::FinishedProduct,
         standard_cost: Some(Decimal::new(50000, 2)), // $500
         lead_time_days: 5,
@@ -108,13 +108,13 @@ let components = vec![
     },
     Component {
         id: ComponentId::new("FRAME-001"),
-        description: "Bike Frame".to_string(),
+        description: "Fahrradrahmen".to_string(),
         component_type: ComponentType::SubAssembly,
         standard_cost: Some(Decimal::new(20000, 2)), // $200
         lead_time_days: 10,
         procurement_type: ProcurementType::Buy,
     },
-    // ... more components
+    // ... weitere Komponenten
 ];
 
 let bom_items = vec![
@@ -125,36 +125,36 @@ let bom_items = vec![
         sequence: 10,
         is_phantom: false,
     },
-    // ... more BOM relationships
+    // ... weitere Stücklistenbeziehungen
 ];
 
-// Build the BOM graph
+// Erstellen Sie den Stücklisten-Graph
 let bom_graph = BomGraph::from_components(&components, &bom_items)?;
 ```
 
-### Step 3: Perform Material Explosion
+### Schritt 3: Materialauflösung durchführen
 
 ```rust
 use bom_calc::ExplosionCalculator;
 
-// Explode BOM for a specific quantity
+// Stückliste für bestimmte Menge auflösen
 let explosion_calc = ExplosionCalculator::new(&bom_graph);
 let explosion_result = explosion_calc.explode(
     &ComponentId::new("BIKE-001"),
-    Decimal::from(100), // Quantity: 100 bikes
+    Decimal::from(100), // Menge: 100 Fahrräder
 )?;
 
-// Get flattened component requirements
+// Flache Komponentenanforderungen erhalten
 let component_requirements = explosion_result.get_flattened_requirements();
 ```
 
-### Step 4: Create MRP Demands from BOM
+### Schritt 4: MRP-Bedarfe aus Stückliste erstellen
 
 ```rust
 use mrp_core::*;
 use chrono::NaiveDate;
 
-// Convert BOM explosion to MRP demands
+// Stücklistenauflösung in MRP-Bedarfe umwandeln
 let due_date = NaiveDate::from_ymd_opt(2025, 12, 1).unwrap();
 let mut demands = Vec::new();
 
@@ -169,12 +169,12 @@ for (component_id, total_qty) in component_requirements {
 }
 ```
 
-### Step 5: Configure MRP with BOM Lead Times
+### Schritt 5: MRP mit Stücklisten-Vorlaufzeiten konfigurieren
 
 ```rust
 use mrp_calc::MRPCalculator;
 
-// Create MRP configurations using BOM data
+// MRP-Konfigurationen mit Stücklistendaten erstellen
 let mut mrp_configs = Vec::new();
 
 for component in &components {
@@ -192,32 +192,32 @@ for component in &components {
 }
 ```
 
-### Step 6: Run Integrated MRP Calculation
+### Schritt 6: Integrierte MRP-Berechnung ausführen
 
 ```rust
-// Initialize MRP calculator
+// MRP-Rechner initialisieren
 let mrp_calculator = MRPCalculator::new(mrp_configs);
 
-// Run MRP with BOM-based demands
+// MRP mit stücklistenbasierten Bedarfen ausführen
 let mrp_result = mrp_calculator.calculate(
     &demands,
-    &existing_supplies,    // Any existing POs or production orders
-    &inventory_balances,   // Current inventory
+    &existing_supplies,    // Vorhandene Bestellungen oder Produktionsaufträge
+    &inventory_balances,   // Aktueller Bestand
 )?;
 
-// Get planned orders
+// Geplante Aufträge abrufen
 let planned_orders = mrp_result.planned_orders;
 
-println!("Generated {} planned orders", planned_orders.len());
+println!("{} geplante Aufträge generiert", planned_orders.len());
 for order in planned_orders {
-    println!("  {} - Qty: {} - Date: {}",
+    println!("  {} - Menge: {} - Datum: {}",
         order.item_id, order.quantity, order.due_date);
 }
 ```
 
-## Code Examples
+## Codebeispiele
 
-### Complete Integration Example
+### Vollständiges Integrationsbeispiel
 
 ```rust
 use bom_core::*;
@@ -229,17 +229,17 @@ use rust_decimal::Decimal;
 use chrono::NaiveDate;
 
 fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
-    // 1. Build BOM structure
+    // 1. Stücklistenstruktur erstellen
     let bom_graph = build_bicycle_bom()?;
 
-    // 2. Receive customer order
+    // 2. Kundenauftrag empfangen
     let customer_order = CustomerOrder {
         product_id: "BIKE-001".to_string(),
         quantity: Decimal::from(100),
         due_date: NaiveDate::from_ymd_opt(2025, 12, 1).unwrap(),
     };
 
-    // 3. Explode BOM to get component requirements
+    // 3. Stückliste auflösen für Komponentenanforderungen
     let explosion_calc = ExplosionCalculator::new(&bom_graph);
     let explosion = explosion_calc.explode_with_lead_time_offset(
         &ComponentId::new(&customer_order.product_id),
@@ -247,7 +247,7 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         customer_order.due_date,
     )?;
 
-    // 4. Convert to MRP demands
+    // 4. In MRP-Bedarfe umwandeln
     let demands: Vec<Demand> = explosion
         .items
         .iter()
@@ -260,20 +260,20 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
 
-    // 5. Run MRP calculation
+    // 5. MRP-Berechnung ausführen
     let mrp_configs = extract_mrp_configs_from_bom(&bom_graph);
     let calculator = MRPCalculator::new(mrp_configs);
 
     let mrp_result = calculator.calculate(
         &demands,
-        &vec![], // No existing supplies
-        &vec![], // No existing inventory
+        &vec![], // Keine vorhandenen Lieferungen
+        &vec![], // Kein vorhandener Bestand
     )?;
 
-    // 6. Output planned orders
-    println!("Planned Orders for Customer Order {}:", customer_order.product_id);
+    // 6. Geplante Aufträge ausgeben
+    println!("Geplante Aufträge für Kundenauftrag {}:", customer_order.product_id);
     for order in mrp_result.planned_orders {
-        println!("  Order: {} - Qty: {} - Start: {} - Due: {}",
+        println!("  Auftrag: {} - Menge: {} - Start: {} - Fällig: {}",
             order.item_id,
             order.quantity,
             order.order_date,
@@ -281,9 +281,9 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    // 7. Calculate total cost using BOM
+    // 7. Gesamtkosten mit Stückliste berechnen
     let total_cost = calculate_order_cost(&bom_graph, &mrp_result.planned_orders)?;
-    println!("Total Material Cost: ${:.2}", total_cost);
+    println!("Gesamtmaterialkosten: ${:.2}", total_cost);
 
     Ok(())
 }
@@ -306,10 +306,10 @@ fn extract_mrp_configs_from_bom(bom_graph: &BomGraph) -> Vec<MrpConfig> {
 }
 ```
 
-### Handling Phantom Components
+### Phantom-Komponenten behandeln
 
 ```rust
-// Phantom parts are consumed immediately, not planned separately
+// Phantom-Teile werden sofort verbraucht, nicht separat geplant
 fn handle_phantom_components(
     bom_graph: &BomGraph,
     explosion: &ExplosionResult,
@@ -318,7 +318,7 @@ fn handle_phantom_components(
         .items
         .iter()
         .filter(|item| {
-            // Skip phantom components in MRP planning
+            // Phantom-Komponenten in MRP-Planung überspringen
             let component = bom_graph.get_component(&item.component_id).unwrap();
             !matches!(component.component_type, ComponentType::Phantom)
         })
@@ -333,21 +333,21 @@ fn handle_phantom_components(
 }
 ```
 
-### Incremental Updates
+### Inkrementelle Aktualisierungen
 
 ```rust
 use mrp_cache::IncrementalCache;
 
-// Use caching for efficient replanning
+// Caching für effiziente Neuplanung nutzen
 fn incremental_replanning(
     bom_graph: &BomGraph,
     mrp_cache: &mut IncrementalCache,
     changed_demands: Vec<Demand>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Only recalculate affected items
+    // Nur betroffene Artikel neu berechnen
     let affected_items = mrp_cache.get_affected_items(&changed_demands);
 
-    // Re-explode only changed top-level items
+    // Nur geänderte Top-Level-Artikel neu auflösen
     let explosion_calc = ExplosionCalculator::new(&bom_graph);
     for demand in changed_demands {
         let explosion = explosion_calc.explode(
@@ -355,11 +355,11 @@ fn incremental_replanning(
             demand.quantity,
         )?;
 
-        // Update cache with new explosions
+        // Cache mit neuen Auflösungen aktualisieren
         mrp_cache.update_explosion(&demand.item_id, explosion);
     }
 
-    // Recalculate MRP for affected items only
+    // MRP nur für betroffene Artikel neu berechnen
     let mrp_result = mrp_cache.calculate_incremental(&affected_items)?;
 
     Ok(())
@@ -368,7 +368,7 @@ fn incremental_replanning(
 
 ## Best Practices
 
-### 1. Cache BOM Explosions
+### 1. Stücklistenauflösungen cachen
 
 ```rust
 use std::collections::HashMap;
@@ -392,14 +392,14 @@ impl BomCache {
 }
 ```
 
-### 2. Validate Data Consistency
+### 2. Datenkonsistenz validieren
 
 ```rust
 fn validate_bom_mrp_consistency(
     bom_graph: &BomGraph,
     mrp_configs: &[MrpConfig],
 ) -> Result<(), String> {
-    // Ensure all BOM components have MRP configs
+    // Sicherstellen, dass alle Stücklistenkomponenten MRP-Konfigurationen haben
     for component in bom_graph.get_all_components() {
         let has_config = mrp_configs
             .iter()
@@ -407,7 +407,7 @@ fn validate_bom_mrp_consistency(
 
         if !has_config {
             return Err(format!(
-                "Component {} in BOM has no MRP configuration",
+                "Komponente {} in Stückliste hat keine MRP-Konfiguration",
                 component.id
             ));
         }
@@ -417,17 +417,17 @@ fn validate_bom_mrp_consistency(
 }
 ```
 
-### 3. Handle Lead Time Offsets
+### 3. Vorlaufzeit-Offsets handhaben
 
 ```rust
-// Calculate order dates considering BOM levels
+// Auftragsdaten unter Berücksichtigung der Stücklistenebenen berechnen
 fn calculate_order_dates_with_bom_levels(
     bom_graph: &BomGraph,
     top_level_due_date: NaiveDate,
 ) -> HashMap<String, NaiveDate> {
     let mut order_dates = HashMap::new();
 
-    // Traverse BOM in reverse (bottom-up)
+    // Stückliste rückwärts durchlaufen (bottom-up)
     for level in bom_graph.get_levels_bottom_up() {
         for component in level {
             let lead_time = component.lead_time_days;
@@ -452,7 +452,7 @@ fn calculate_order_dates_with_bom_levels(
 }
 ```
 
-### 4. Monitor Performance
+### 4. Performance überwachen
 
 ```rust
 use std::time::Instant;
@@ -460,42 +460,42 @@ use std::time::Instant;
 fn benchmark_integrated_system() {
     let start = Instant::now();
 
-    // BOM explosion
+    // Stücklistenauflösung
     let explosion_start = Instant::now();
     let explosion = explode_bom();
-    println!("BOM Explosion: {:?}", explosion_start.elapsed());
+    println!("Stücklistenauflösung: {:?}", explosion_start.elapsed());
 
-    // MRP calculation
+    // MRP-Berechnung
     let mrp_start = Instant::now();
     let mrp_result = calculate_mrp();
-    println!("MRP Calculation: {:?}", mrp_start.elapsed());
+    println!("MRP-Berechnung: {:?}", mrp_start.elapsed());
 
-    println!("Total Time: {:?}", start.elapsed());
+    println!("Gesamtzeit: {:?}", start.elapsed());
 }
 ```
 
-## Troubleshooting
+## Fehlerbehebung
 
-### Issue: Circular BOM Dependencies
+### Problem: Zirkuläre Stücklistenabhängigkeiten
 
-**Problem**: MRP calculation fails due to circular references in BOM
+**Problem**: MRP-Berechnung schlägt aufgrund zirkulärer Referenzen in Stückliste fehl
 
-**Solution**:
+**Lösung**:
 ```rust
-// Use BOM graph validation
+// Stücklisten-Graph-Validierung verwenden
 if let Err(e) = bom_graph.validate_no_cycles() {
-    eprintln!("BOM contains circular dependencies: {}", e);
-    // Handle error appropriately
+    eprintln!("Stückliste enthält zirkuläre Abhängigkeiten: {}", e);
+    // Fehler angemessen behandeln
 }
 ```
 
-### Issue: Mismatched Lead Times
+### Problem: Nicht übereinstimmende Vorlaufzeiten
 
-**Problem**: MRP orders calculated too late
+**Problem**: MRP-Aufträge werden zu spät berechnet
 
-**Solution**:
+**Lösung**:
 ```rust
-// Always sync lead times from BOM to MRP configs
+// Vorlaufzeiten immer von Stückliste zu MRP-Konfigurationen synchronisieren
 for component in bom_graph.get_all_components() {
     let mrp_config = mrp_configs.iter_mut()
         .find(|cfg| cfg.item_id == component.id.to_string())
@@ -505,13 +505,13 @@ for component in bom_graph.get_all_components() {
 }
 ```
 
-### Issue: Memory Usage with Large BOMs
+### Problem: Speichernutzung bei großen Stücklisten
 
-**Problem**: High memory consumption with complex product structures
+**Problem**: Hoher Speicherverbrauch bei komplexen Produktstrukturen
 
-**Solution**:
+**Lösung**:
 ```rust
-// Use streaming explosion instead of full materialization
+// Streaming-Auflösung statt vollständiger Materialisierung verwenden
 let explosion_stream = ExplosionCalculator::new(&bom_graph)
     .explode_streaming(&root_id, quantity);
 
@@ -520,19 +520,19 @@ for batch in explosion_stream.chunks(1000) {
 }
 ```
 
-## Related Documentation
+## Verwandte Dokumentation
 
-- [NexusBom Documentation](https://github.com/Ricemug/NexusBom)
-- [NexusMRP Documentation](../README.md)
-- [Dynamic Time Buckets](./DYNAMIC_TIME_BUCKETS.md)
-- [Negative Inventory Handling](./NEGATIVE_INVENTORY.md)
+- [NexusBom Dokumentation](https://github.com/Ricemug/NexusBom)
+- [NexusMRP Dokumentation](../README.md)
+- [Dynamische Zeitbuckets](./DYNAMIC_TIME_BUCKETS.md)
+- [Negative Bestandsbehandlung](./NEGATIVE_INVENTORY.md)
 
 ## Support
 
-For integration questions:
-- Create an issue on [NexusMRP GitHub](https://github.com/Ricemug/NexusMRP/issues)
-- Email: xiaoivan1@proton.me
+Bei Integrationsfragen:
+- Erstellen Sie ein Issue auf [NexusMRP GitHub](https://github.com/Ricemug/NexusMRP/issues)
+- E-Mail: xiaoivan1@proton.me
 
 ---
 
-**Happy Planning! 🚀**
+**Viel Erfolg bei der Planung! 🚀**

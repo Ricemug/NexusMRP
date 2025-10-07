@@ -2,7 +2,7 @@
 
 > 物料需求計劃與物料清單整合完整指南
 
-[English](./INTEGRATION_WITH_NEXUSBOM.md) | [简体中文](./INTEGRATION_WITH_NEXUSBOM.zh-CN.md)
+[English](./INTEGRATION_WITH_NEXUSBOM.md) | [简体中文](./INTEGRATION_WITH_NEXUSBOM.zh-CN.md) | [Deutsch](./INTEGRATION_WITH_NEXUSBOM.de.md)
 
 本指南說明如何整合 **NexusMRP**（物料需求計劃）與 **NexusBom**（物料清單）以建構完整的製造規劃系統。
 
