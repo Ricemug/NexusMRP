@@ -1,52 +1,52 @@
-# 🔗 Integration Guide: NexusMRP + NexusBom
+# 🔗 集成指南：NexusMRP + NexusBom
 
-> Complete guide for integrating Material Requirements Planning with Bill of Materials
+> 物料需求计划与物料清单集成完整指南
 
-[繁體中文](./INTEGRATION_WITH_NEXUSBOM.zh-TW.md) | [简体中文](./INTEGRATION_WITH_NEXUSBOM.zh-CN.md)
+[English](./INTEGRATION_WITH_NEXUSBOM.md) | [繁體中文](./INTEGRATION_WITH_NEXUSBOM.zh-TW.md)
 
-This guide explains how to integrate **NexusMRP** (Material Requirements Planning) with **NexusBom** (Bill of Materials) to build a complete manufacturing planning system.
+本指南说明如何集成 **NexusMRP**（物料需求计划）与 **NexusBom**（物料清单）以构建完整的制造规划系统。
 
-## 📋 Table of Contents
+## 📋 目录
 
-- [Overview](#overview)
-- [Why Integrate?](#why-integrate)
-- [Architecture](#architecture)
-- [Integration Steps](#integration-steps)
-- [Code Examples](#code-examples)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
+- [概述](#概述)
+- [为什么要集成？](#为什么要集成)
+- [架构](#架构)
+- [集成步骤](#集成步骤)
+- [代码示例](#代码示例)
+- [最佳实践](#最佳实践)
+- [疑难解答](#疑难解答)
 
-## Overview
+## 概述
 
-**NexusBom** and **NexusMRP** are designed as complementary systems:
+**NexusBom** 和 **NexusMRP** 被设计为互补系统：
 
-- **NexusBom**: Manages product structures, material explosions, and cost calculations
-- **NexusMRP**: Plans material requirements, schedules production, and manages inventory
+- **NexusBom**：管理产品结构、物料展开和成本计算
+- **NexusMRP**：规划物料需求、排程生产和管理库存
 
-Together, they form a powerful manufacturing planning solution.
+两者结合形成强大的制造规划解决方案。
 
-## Why Integrate?
+## 为什么要集成？
 
-| Without Integration | With Integration |
-|---------------------|------------------|
-| Manual BOM lookups | Automatic material explosion |
-| Static planning | Dynamic demand propagation |
-| Disconnected systems | End-to-end visibility |
-| Limited optimization | Capacity-aware planning |
+| 未集成 | 已集成 |
+|--------|--------|
+| 手动 BOM 查询 | 自动物料展开 |
+| 静态规划 | 动态需求传播 |
+| 系统分离 | 端到端可视化 |
+| 有限优化 | 产能感知规划 |
 
-### Key Benefits
+### 主要优势
 
-✅ **Automatic Multi-Level Planning** - MRP uses BOM to explode demands through all levels
-✅ **Real-Time Cost Analysis** - Combine planned orders with BOM costs
-✅ **Change Impact Analysis** - See how BOM changes affect material plans
-✅ **Phantom Part Handling** - MRP respects BOM phantom components
-✅ **Alternate BOM Support** - Plan with different manufacturing routes
+✅ **自动多阶规划** - MRP 使用 BOM 将需求展开至所有层级
+✅ **实时成本分析** - 结合计划订单与 BOM 成本
+✅ **变更影响分析** - 查看 BOM 变更如何影响物料计划
+✅ **虚设件处理** - MRP 遵循 BOM 虚设零件规则
+✅ **替代 BOM 支持** - 以不同制造路径进行规划
 
-## Architecture
+## 架构
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   Your Application                       │
+│                   您的应用程序                           │
 └─────────────────────────────────────────────────────────┘
                            │
            ┌───────────────┴───────────────┐
@@ -54,53 +54,53 @@ Together, they form a powerful manufacturing planning solution.
            ▼                               ▼
 ┌──────────────────────┐       ┌──────────────────────┐
 │     NexusBom         │       │     NexusMRP         │
-│  (BOM Structure)     │◄──────│  (Planning Logic)    │
+│   (BOM 结构)         │◄──────│   (规划逻辑)         │
 └──────────────────────┘       └──────────────────────┘
            │                               │
-           │     Material Explosion        │
-           │     Component Lists           │
-           │     Cost Data                 │
+           │     物料展开                   │
+           │     零件清单                   │
+           │     成本数据                   │
            └───────────────────────────────┘
 ```
 
-### Data Flow
+### 数据流程
 
-1. **Load BOM Data** → NexusBom builds product structure graph
-2. **Create Demands** → NexusMRP receives top-level requirements
-3. **Explode BOM** → NexusBom provides component lists with quantities
-4. **Calculate MRP** → NexusMRP propagates demands through BOM levels
-5. **Generate Plans** → Output planned orders for all components
+1. **加载 BOM 数据** → NexusBom 建立产品结构图
+2. **创建需求** → NexusMRP 接收顶层需求
+3. **展开 BOM** → NexusBom 提供零件清单与数量
+4. **计算 MRP** → NexusMRP 通过 BOM 层级传播需求
+5. **生成计划** → 输出所有零件的计划订单
 
-## Integration Steps
+## 集成步骤
 
-### Step 1: Add Dependencies
+### 步骤 1：添加依赖包
 
-Add both libraries to your `Cargo.toml`:
+在 `Cargo.toml` 中添加两个库：
 
 ```toml
 [dependencies]
-# NexusBom - BOM calculation engine
+# NexusBom - BOM 计算引擎
 bom-core = { git = "https://github.com/Ricemug/NexusBom" }
 bom-calc = { git = "https://github.com/Ricemug/NexusBom" }
 bom-graph = { git = "https://github.com/Ricemug/NexusBom" }
 
-# NexusMRP - MRP calculation engine
+# NexusMRP - MRP 计算引擎
 mrp-core = { git = "https://github.com/Ricemug/NexusMRP" }
 mrp-calc = { git = "https://github.com/Ricemug/NexusMRP" }
 mrp-cache = { git = "https://github.com/Ricemug/NexusMRP" }
 ```
 
-### Step 2: Build BOM Graph
+### 步骤 2：建立 BOM 图
 
 ```rust
 use bom_core::*;
 use bom_graph::BomGraph;
 
-// Define your product structure
+// 定义产品结构
 let components = vec![
     Component {
         id: ComponentId::new("BIKE-001"),
-        description: "Complete Bicycle".to_string(),
+        description: "完整自行车".to_string(),
         component_type: ComponentType::FinishedProduct,
         standard_cost: Some(Decimal::new(50000, 2)), // $500
         lead_time_days: 5,
@@ -108,13 +108,13 @@ let components = vec![
     },
     Component {
         id: ComponentId::new("FRAME-001"),
-        description: "Bike Frame".to_string(),
+        description: "自行车车架".to_string(),
         component_type: ComponentType::SubAssembly,
         standard_cost: Some(Decimal::new(20000, 2)), // $200
         lead_time_days: 10,
         procurement_type: ProcurementType::Buy,
     },
-    // ... more components
+    // ... 更多零件
 ];
 
 let bom_items = vec![
@@ -125,36 +125,36 @@ let bom_items = vec![
         sequence: 10,
         is_phantom: false,
     },
-    // ... more BOM relationships
+    // ... 更多 BOM 关系
 ];
 
-// Build the BOM graph
+// 建立 BOM 图
 let bom_graph = BomGraph::from_components(&components, &bom_items)?;
 ```
 
-### Step 3: Perform Material Explosion
+### 步骤 3：执行物料展开
 
 ```rust
 use bom_calc::ExplosionCalculator;
 
-// Explode BOM for a specific quantity
+// 针对特定数量展开 BOM
 let explosion_calc = ExplosionCalculator::new(&bom_graph);
 let explosion_result = explosion_calc.explode(
     &ComponentId::new("BIKE-001"),
-    Decimal::from(100), // Quantity: 100 bikes
+    Decimal::from(100), // 数量：100 台自行车
 )?;
 
-// Get flattened component requirements
+// 获取扁平化的零件需求
 let component_requirements = explosion_result.get_flattened_requirements();
 ```
 
-### Step 4: Create MRP Demands from BOM
+### 步骤 4：从 BOM 创建 MRP 需求
 
 ```rust
 use mrp_core::*;
 use chrono::NaiveDate;
 
-// Convert BOM explosion to MRP demands
+// 将 BOM 展开转换为 MRP 需求
 let due_date = NaiveDate::from_ymd_opt(2025, 12, 1).unwrap();
 let mut demands = Vec::new();
 
@@ -169,12 +169,12 @@ for (component_id, total_qty) in component_requirements {
 }
 ```
 
-### Step 5: Configure MRP with BOM Lead Times
+### 步骤 5：使用 BOM 提前期配置 MRP
 
 ```rust
 use mrp_calc::MRPCalculator;
 
-// Create MRP configurations using BOM data
+// 使用 BOM 数据创建 MRP 配置
 let mut mrp_configs = Vec::new();
 
 for component in &components {
@@ -192,32 +192,32 @@ for component in &components {
 }
 ```
 
-### Step 6: Run Integrated MRP Calculation
+### 步骤 6：执行集成 MRP 计算
 
 ```rust
-// Initialize MRP calculator
+// 初始化 MRP 计算器
 let mrp_calculator = MRPCalculator::new(mrp_configs);
 
-// Run MRP with BOM-based demands
+// 使用基于 BOM 的需求执行 MRP
 let mrp_result = mrp_calculator.calculate(
     &demands,
-    &existing_supplies,    // Any existing POs or production orders
-    &inventory_balances,   // Current inventory
+    &existing_supplies,    // 任何现有采购单或生产单
+    &inventory_balances,   // 当前库存
 )?;
 
-// Get planned orders
+// 获取计划订单
 let planned_orders = mrp_result.planned_orders;
 
-println!("Generated {} planned orders", planned_orders.len());
+println!("生成 {} 笔计划订单", planned_orders.len());
 for order in planned_orders {
-    println!("  {} - Qty: {} - Date: {}",
+    println!("  {} - 数量: {} - 日期: {}",
         order.item_id, order.quantity, order.due_date);
 }
 ```
 
-## Code Examples
+## 代码示例
 
-### Complete Integration Example
+### 完整集成示例
 
 ```rust
 use bom_core::*;
@@ -229,17 +229,17 @@ use rust_decimal::Decimal;
 use chrono::NaiveDate;
 
 fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
-    // 1. Build BOM structure
+    // 1. 建立 BOM 结构
     let bom_graph = build_bicycle_bom()?;
 
-    // 2. Receive customer order
+    // 2. 接收客户订单
     let customer_order = CustomerOrder {
         product_id: "BIKE-001".to_string(),
         quantity: Decimal::from(100),
         due_date: NaiveDate::from_ymd_opt(2025, 12, 1).unwrap(),
     };
 
-    // 3. Explode BOM to get component requirements
+    // 3. 展开 BOM 以获取零件需求
     let explosion_calc = ExplosionCalculator::new(&bom_graph);
     let explosion = explosion_calc.explode_with_lead_time_offset(
         &ComponentId::new(&customer_order.product_id),
@@ -247,7 +247,7 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         customer_order.due_date,
     )?;
 
-    // 4. Convert to MRP demands
+    // 4. 转换为 MRP 需求
     let demands: Vec<Demand> = explosion
         .items
         .iter()
@@ -260,20 +260,20 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
 
-    // 5. Run MRP calculation
+    // 5. 执行 MRP 计算
     let mrp_configs = extract_mrp_configs_from_bom(&bom_graph);
     let calculator = MRPCalculator::new(mrp_configs);
 
     let mrp_result = calculator.calculate(
         &demands,
-        &vec![], // No existing supplies
-        &vec![], // No existing inventory
+        &vec![], // 无现有供应
+        &vec![], // 无现有库存
     )?;
 
-    // 6. Output planned orders
-    println!("Planned Orders for Customer Order {}:", customer_order.product_id);
+    // 6. 输出计划订单
+    println!("客户订单 {} 的计划订单：", customer_order.product_id);
     for order in mrp_result.planned_orders {
-        println!("  Order: {} - Qty: {} - Start: {} - Due: {}",
+        println!("  订单: {} - 数量: {} - 开始: {} - 到期: {}",
             order.item_id,
             order.quantity,
             order.order_date,
@@ -281,9 +281,9 @@ fn integrated_planning_example() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    // 7. Calculate total cost using BOM
+    // 7. 使用 BOM 计算总成本
     let total_cost = calculate_order_cost(&bom_graph, &mrp_result.planned_orders)?;
-    println!("Total Material Cost: ${:.2}", total_cost);
+    println!("总物料成本: ${:.2}", total_cost);
 
     Ok(())
 }
@@ -306,10 +306,10 @@ fn extract_mrp_configs_from_bom(bom_graph: &BomGraph) -> Vec<MrpConfig> {
 }
 ```
 
-### Handling Phantom Components
+### 处理虚设零件
 
 ```rust
-// Phantom parts are consumed immediately, not planned separately
+// 虚设件立即消耗，不单独规划
 fn handle_phantom_components(
     bom_graph: &BomGraph,
     explosion: &ExplosionResult,
@@ -318,7 +318,7 @@ fn handle_phantom_components(
         .items
         .iter()
         .filter(|item| {
-            // Skip phantom components in MRP planning
+            // 在 MRP 规划中跳过虚设零件
             let component = bom_graph.get_component(&item.component_id).unwrap();
             !matches!(component.component_type, ComponentType::Phantom)
         })
@@ -333,21 +333,21 @@ fn handle_phantom_components(
 }
 ```
 
-### Incremental Updates
+### 增量更新
 
 ```rust
 use mrp_cache::IncrementalCache;
 
-// Use caching for efficient replanning
+// 使用缓存进行高效重新规划
 fn incremental_replanning(
     bom_graph: &BomGraph,
     mrp_cache: &mut IncrementalCache,
     changed_demands: Vec<Demand>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Only recalculate affected items
+    // 只重新计算受影响的项目
     let affected_items = mrp_cache.get_affected_items(&changed_demands);
 
-    // Re-explode only changed top-level items
+    // 只重新展开变更的顶层项目
     let explosion_calc = ExplosionCalculator::new(&bom_graph);
     for demand in changed_demands {
         let explosion = explosion_calc.explode(
@@ -355,20 +355,20 @@ fn incremental_replanning(
             demand.quantity,
         )?;
 
-        // Update cache with new explosions
+        // 使用新展开结果更新缓存
         mrp_cache.update_explosion(&demand.item_id, explosion);
     }
 
-    // Recalculate MRP for affected items only
+    // 只对受影响项目重新计算 MRP
     let mrp_result = mrp_cache.calculate_incremental(&affected_items)?;
 
     Ok(())
 }
 ```
 
-## Best Practices
+## 最佳实践
 
-### 1. Cache BOM Explosions
+### 1. 缓存 BOM 展开
 
 ```rust
 use std::collections::HashMap;
@@ -392,14 +392,14 @@ impl BomCache {
 }
 ```
 
-### 2. Validate Data Consistency
+### 2. 验证数据一致性
 
 ```rust
 fn validate_bom_mrp_consistency(
     bom_graph: &BomGraph,
     mrp_configs: &[MrpConfig],
 ) -> Result<(), String> {
-    // Ensure all BOM components have MRP configs
+    // 确保所有 BOM 零件都有 MRP 配置
     for component in bom_graph.get_all_components() {
         let has_config = mrp_configs
             .iter()
@@ -407,7 +407,7 @@ fn validate_bom_mrp_consistency(
 
         if !has_config {
             return Err(format!(
-                "Component {} in BOM has no MRP configuration",
+                "BOM 中的零件 {} 没有 MRP 配置",
                 component.id
             ));
         }
@@ -417,17 +417,17 @@ fn validate_bom_mrp_consistency(
 }
 ```
 
-### 3. Handle Lead Time Offsets
+### 3. 处理提前期偏移
 
 ```rust
-// Calculate order dates considering BOM levels
+// 考虑 BOM 层级计算订单日期
 fn calculate_order_dates_with_bom_levels(
     bom_graph: &BomGraph,
     top_level_due_date: NaiveDate,
 ) -> HashMap<String, NaiveDate> {
     let mut order_dates = HashMap::new();
 
-    // Traverse BOM in reverse (bottom-up)
+    // 反向遍历 BOM（由下而上）
     for level in bom_graph.get_levels_bottom_up() {
         for component in level {
             let lead_time = component.lead_time_days;
@@ -452,7 +452,7 @@ fn calculate_order_dates_with_bom_levels(
 }
 ```
 
-### 4. Monitor Performance
+### 4. 监控性能
 
 ```rust
 use std::time::Instant;
@@ -460,42 +460,42 @@ use std::time::Instant;
 fn benchmark_integrated_system() {
     let start = Instant::now();
 
-    // BOM explosion
+    // BOM 展开
     let explosion_start = Instant::now();
     let explosion = explode_bom();
-    println!("BOM Explosion: {:?}", explosion_start.elapsed());
+    println!("BOM 展开: {:?}", explosion_start.elapsed());
 
-    // MRP calculation
+    // MRP 计算
     let mrp_start = Instant::now();
     let mrp_result = calculate_mrp();
-    println!("MRP Calculation: {:?}", mrp_start.elapsed());
+    println!("MRP 计算: {:?}", mrp_start.elapsed());
 
-    println!("Total Time: {:?}", start.elapsed());
+    println!("总时间: {:?}", start.elapsed());
 }
 ```
 
-## Troubleshooting
+## 疑难解答
 
-### Issue: Circular BOM Dependencies
+### 问题：BOM 循环依赖
 
-**Problem**: MRP calculation fails due to circular references in BOM
+**问题**：由于 BOM 中的循环引用导致 MRP 计算失败
 
-**Solution**:
+**解决方案**：
 ```rust
-// Use BOM graph validation
+// 使用 BOM 图验证
 if let Err(e) = bom_graph.validate_no_cycles() {
-    eprintln!("BOM contains circular dependencies: {}", e);
-    // Handle error appropriately
+    eprintln!("BOM 包含循环依赖: {}", e);
+    // 适当处理错误
 }
 ```
 
-### Issue: Mismatched Lead Times
+### 问题：提前期不匹配
 
-**Problem**: MRP orders calculated too late
+**问题**：MRP 订单计算过晚
 
-**Solution**:
+**解决方案**：
 ```rust
-// Always sync lead times from BOM to MRP configs
+// 始终从 BOM 同步提前期到 MRP 配置
 for component in bom_graph.get_all_components() {
     let mrp_config = mrp_configs.iter_mut()
         .find(|cfg| cfg.item_id == component.id.to_string())
@@ -505,13 +505,13 @@ for component in bom_graph.get_all_components() {
 }
 ```
 
-### Issue: Memory Usage with Large BOMs
+### 问题：大型 BOM 的内存使用
 
-**Problem**: High memory consumption with complex product structures
+**问题**：复杂产品结构导致高内存消耗
 
-**Solution**:
+**解决方案**：
 ```rust
-// Use streaming explosion instead of full materialization
+// 使用流式展开而非完全具体化
 let explosion_stream = ExplosionCalculator::new(&bom_graph)
     .explode_streaming(&root_id, quantity);
 
@@ -520,19 +520,19 @@ for batch in explosion_stream.chunks(1000) {
 }
 ```
 
-## Related Documentation
+## 相关文档
 
-- [NexusBom Documentation](https://github.com/Ricemug/NexusBom)
-- [NexusMRP Documentation](../README.md)
-- [Dynamic Time Buckets](./DYNAMIC_TIME_BUCKETS.md)
-- [Negative Inventory Handling](./NEGATIVE_INVENTORY.md)
+- [NexusBom 文档](https://github.com/Ricemug/NexusBom)
+- [NexusMRP 文档](../README.md)
+- [动态时间桶](./DYNAMIC_TIME_BUCKETS.md)
+- [负库存处理](./NEGATIVE_INVENTORY.md)
 
-## Support
+## 支持
 
-For integration questions:
-- Create an issue on [NexusMRP GitHub](https://github.com/Ricemug/NexusMRP/issues)
-- Email: xiaoivan1@proton.me
+如有集成问题：
+- 在 [NexusMRP GitHub](https://github.com/Ricemug/NexusMRP/issues) 创建 issue
+- Email：xiaoivan1@proton.me
 
 ---
 
-**Happy Planning! 🚀**
+**祝您规划顺利！🚀**
